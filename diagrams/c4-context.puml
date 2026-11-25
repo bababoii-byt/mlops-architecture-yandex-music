@@ -1,5 +1,5 @@
 @startuml
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!include <C4/C4_Context>
 
 title C4 — Контекст системы формирования семейного плейлиста
 
@@ -16,6 +16,7 @@ System_Ext(editorial, "Редакционные подборки", "Предос
 
 Rel(user, app, "Слушает плейлист, ставит лайки и пропускает треки")
 Rel(app, playlist, "Запрашивает плейлист и передаёт события прослушивания")
+Rel(playlist, app, "Публикует сформированный семейный плейлист")
 Rel(playlist, family, "Получает состав семьи и настройки участия")
 Rel(playlist, history, "Получает историю прослушиваний активных участников")
 Rel(playlist, catalog, "Получает метаданные треков")

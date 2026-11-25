@@ -1,0 +1,44 @@
+
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.13.0/C4_Container.puml
+
+title C4 Container — Формирование семейного плейлиста
+
+Person(user, "Участник семьи", "Слушает семейный плейлист")
+
+System_Ext(family, "Family Service", "Состав семьи и настройки согласия")
+System_Ext(history, "Listening History", "История прослушиваний")
+System_Ext(similar, "Similar Users Service", "Рекомендации похожих пользователей")
+System_Ext(editorial, "Editorial Service", "Редакционные подборки")
+System_Ext(catalog, "Music Catalog", "Метаданные треков и исполнителей")
+System_Ext(music, "Yandex Music", "Публикация плейлиста и получение пользовательских событий")
+
+System_Boundary(system, "Система формирования семейного плейлиста") {
+    Container(scheduler, "Weekly Scheduler", "Airflow", "Запускает еженедельное обновление")
+    Container(backend, "Playlist Backend", "Python, FastAPI", "Управляет процессом формирования и публикации плейлиста")
+    Container(candidate, "Candidate & Feature Service", "Python", "Собирает кандидатов и формирует признаки для модели")
+    Container(ml, "ML Inference Service", "Python, FastAPI", "Оценивает пригодность треков для семейной группы")
+    Container(registry, "Model Registry", "MLflow", "Хранит версии и метаданные ML-моделей")
+    ContainerDb(playlistDb, "Playlist Database", "PostgreSQL", "Хранит состав сформированных семейных плейлистов")
+    ContainerQueue(events, "Feedback Event Queue", "Apache Kafka", "Передаёт события прослушивания и реакции пользователей")
+}
+
+Rel(scheduler, backend, "Запускает обновление")
+Rel(backend, family, "Получает состав семьи и настройки участия")
+Rel(backend, candidate, "Передаёт запрос на подготовку кандидатов")
+Rel(candidate, history, "Запрашивает историю согласившихся участников")
+Rel(candidate, similar, "Получает рекомендации")
+Rel(candidate, editorial, "Получает редакционные подборки")
+Rel(candidate, catalog, "Получает метаданные треков")
+Rel(candidate, ml, "Передаёт кандидатов и признаки")
+Rel(ml, registry, "Получает выбранную версию модели")
+Rel(ml, candidate, "Возвращает оценки треков")
+Rel(candidate, backend, "Возвращает кандидатов с оценками")
+Rel(backend, playlistDb, "Сохраняет итоговый плейлист")
+Rel(backend, music, "Публикует плейлист")
+Rel(user, music, "Слушает плейлист и взаимодействует с треками")
+Rel(music, events, "Передаёт события прослушивания и реакции")
+Rel(events, backend, "Передаёт события для оценки качества")
+
+SHOW_LEGEND()
+@enduml

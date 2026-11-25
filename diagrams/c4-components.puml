@@ -1,0 +1,30 @@
+
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.13.0/C4_Component.puml
+
+title C4 Component — ML Inference Service
+
+Container_Ext(candidate, "Candidate & Feature Service", "Python", "Передаёт кандидатов и подготовленные признаки")
+Container_Ext(registry, "Model Registry", "MLflow", "Хранит версии ML-моделей")
+Container_Ext(backend, "Playlist Backend", "Python, FastAPI", "Получает результаты оценки")
+
+Container_Boundary(ml, "ML Inference Service") {
+    Component(api, "Inference API", "FastAPI", "Принимает запросы на оценку треков")
+    Component(preprocessor, "Feature Preprocessor", "Python", "Проверяет и преобразует входные признаки")
+    Component(resolver, "Model Resolver", "Python", "Выбирает версию модели")
+    Component(inference, "Model Inference", "Python", "Вычисляет оценки пригодности треков")
+    Component(validator, "Score Validator", "Python", "Проверяет корректность и допустимость оценок")
+}
+
+Rel(candidate, api, "Передаёт кандидатов и признаки")
+Rel(api, preprocessor, "Передаёт входные данные")
+Rel(preprocessor, resolver, "Передаёт подготовленные признаки")
+Rel(resolver, registry, "Запрашивает актуальную стабильную версию")
+Rel(resolver, inference, "Передаёт выбранную модель")
+Rel(inference, validator, "Передаёт оценки")
+Rel(validator, api, "Возвращает проверенный результат")
+Rel(api, candidate, "Возвращает оценки треков")
+Rel(candidate, backend, "Передаёт кандидатов с оценками")
+
+SHOW_LEGEND()
+@enduml
